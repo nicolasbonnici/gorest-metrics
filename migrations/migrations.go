@@ -19,10 +19,10 @@ func GetMigrations() migrations.MigrationSource {
 					id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 					resource TEXT NOT NULL,
 					resource_id UUID NOT NULL,
-					key VARCHAR(255) NOT NULL,
+					name VARCHAR(255) NOT NULL,
 					value INTEGER NOT NULL DEFAULT 0,
 					created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-					CONSTRAINT unique_resource_metric UNIQUE (resource, resource_id, key)
+					CONSTRAINT unique_resource_metric UNIQUE (resource, resource_id, name)
 				)`,
 				MySQL: `CREATE TABLE IF NOT EXISTS metrics (
 					id CHAR(36) PRIMARY KEY,
@@ -40,10 +40,10 @@ func GetMigrations() migrations.MigrationSource {
 					id TEXT PRIMARY KEY,
 					resource TEXT NOT NULL,
 					resource_id TEXT NOT NULL,
-					key TEXT NOT NULL,
+					name TEXT NOT NULL,
 					value INTEGER NOT NULL DEFAULT 0,
 					created_at TEXT NOT NULL DEFAULT (datetime('now')),
-					UNIQUE (resource, resource_id, key)
+					UNIQUE (resource, resource_id, name)
 				)`,
 			}); err != nil {
 				return err
@@ -52,12 +52,12 @@ func GetMigrations() migrations.MigrationSource {
 			// Create indexes for Postgres and SQLite
 			if db.DriverName() == "postgres" {
 				if err := migrations.SQL(ctx, db, migrations.DialectSQL{
-					Postgres: `CREATE INDEX IF NOT EXISTS idx_metrics_resource ON metrics(resource, resource_id, key)`,
+					Postgres: `CREATE INDEX IF NOT EXISTS idx_metrics_resource ON metrics(resource, resource_id, name)`,
 				}); err != nil {
 					return err
 				}
 				if err := migrations.SQL(ctx, db, migrations.DialectSQL{
-					Postgres: `CREATE INDEX IF NOT EXISTS idx_metrics_key ON metrics(key, created_at)`,
+					Postgres: `CREATE INDEX IF NOT EXISTS idx_metrics_key ON metrics(name, created_at)`,
 				}); err != nil {
 					return err
 				}

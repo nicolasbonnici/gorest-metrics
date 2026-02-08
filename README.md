@@ -10,9 +10,9 @@ A production-ready GoREST plugin for tracking integer metrics on polymorphic res
 
 - **Polymorphic Metrics**: Track metrics for any resource type (posts, users, products, etc.)
 - **Flexible Values**: Support for both positive and negative integers (deltas, adjustments)
-- **Unique Constraints**: Enforces one metric per (resource, resource_id, key) combination
+- **Unique Constraints**: Enforces one metric per (resource, resource_id, name) combination
 - **Historical Tracking**: Automatic timestamp tracking with `created_at`
-- **Advanced Filtering**: Filter by resource type, ID, key, or value ranges
+- **Advanced Filtering**: Filter by resource type, ID, name, or value ranges
 - **Multi-Database**: Full support for PostgreSQL, MySQL, and SQLite
 - **Efficient Indexing**: Optimized composite indexes for fast queries
 - **Type Safety**: Generic CRUD operations with compile-time type checking
@@ -43,7 +43,7 @@ func main() {
         PluginConfigs: map[string]map[string]interface{}{
             "metrics": {
                 "allowed_types": []interface{}{"post", "user", "product"},
-                "max_key_length": 255,
+                "max_name_length": 255,
                 "only_positive_values": false,
                 "pagination_limit": 50,
                 "max_pagination_limit": 200,
@@ -91,15 +91,15 @@ CREATE TABLE metrics (
     id UUID PRIMARY KEY,
     resource TEXT NOT NULL,              -- Resource type (post, user, etc.)
     resource_id UUID NOT NULL,            -- Foreign key to resource
-    key VARCHAR(255) NOT NULL,            -- Metric name (view_count, etc.)
+    name VARCHAR(255) NOT NULL,            -- Metric name (views, etc.)
     value INTEGER NOT NULL DEFAULT 0,     -- Metric value (supports negative)
     created_at TIMESTAMP NOT NULL,        -- Last update timestamp
-    UNIQUE (resource, resource_id, key)   -- One metric per resource/key
+    UNIQUE (resource, resource_id, name)   -- One metric per resource/name
 );
 
 -- Composite indexes for performance
-CREATE INDEX idx_metrics_resource ON metrics(resource, resource_id, key);
-CREATE INDEX idx_metrics_key ON metrics(key, created_at);
+CREATE INDEX idx_metrics_resource ON metrics(resource, resource_id, name);
+CREATE INDEX idx_metrics_name ON metrics(name, created_at);
 CREATE INDEX idx_metrics_resource_id ON metrics(resource_id);
 ```
 
@@ -110,18 +110,18 @@ CREATE INDEX idx_metrics_resource_id ON metrics(resource_id);
 Get all metrics with filtering, pagination, and ordering.
 
 ```http
-GET /metrics?resource=post&resourceId={uuid}&key=view_count&limit=50&page=1
+GET /metrics?resource=post&resourceId={uuid}&name=views&limit=50&page=1
 ```
 
 **Query Parameters:**
 
 - `resource` - Filter by resource type
 - `resourceId` - Filter by specific resource UUID
-- `key` - Filter by metric key name
+- `name` - Filter by metric  name
 - `value[eq]`, `value[gt]`, `value[gte]`, `value[lt]`, `value[lte]` - Filter by value ranges
 - `limit` - Results per page (default: 50, max: 200)
 - `page` - Page number (default: 1)
-- `order` - Sort order (e.g., `-value`, `createdAt`, `-key`)
+- `order` - Sort order (e.g., `-value`, `createdAt`, `-name`)
 - `count` - Include total count (default: true)
 
 **Example Response:**
@@ -138,7 +138,7 @@ GET /metrics?resource=post&resourceId={uuid}&key=view_count&limit=50&page=1
       "id": "123e4567-e89b-12d3-a456-426614174000",
       "resource": "post",
       "resourceId": "550e8400-e29b-41d4-a716-446655440000",
-      "key": "view_count",
+      "name": "views",
       "value": 1250,
       "createdAt": "2026-02-08T10:30:00Z"
     }
@@ -166,7 +166,7 @@ GET /metrics/{id}
   "id": "123e4567-e89b-12d3-a456-426614174000",
   "resource": "post",
   "resourceId": "550e8400-e29b-41d4-a716-446655440000",
-  "key": "view_count",
+  "name": "views",
   "value": 1250,
   "createdAt": "2026-02-08T10:30:00Z"
 }
@@ -181,14 +181,14 @@ Content-Type: application/json
 {
   "resource": "post",
   "resourceId": "550e8400-e29b-41d4-a716-446655440000",
-  "key": "view_count",
+  "name": "views",
   "value": 1
 }
 ```
 
 **Response:** `201 Created` with created metric object
 
-**Note:** Creating a metric with duplicate (resource, resourceId, key) will fail with `500 Internal Server Error`. Consider using Update endpoint to modify existing metrics.
+**Note:** Creating a metric with duplicate (resource, resourceId, name) will fail with `500 Internal Server Error`. Consider using Update endpoint to modify existing metrics.
 
 ### Update Metric
 
@@ -224,12 +224,12 @@ curl -X POST http://localhost:8080/metrics \
   -d '{
     "resource": "post",
     "resourceId": "550e8400-e29b-41d4-a716-446655440000",
-    "key": "view_count",
+    "name": "views",
     "value": 1
   }'
 
 # Get current view count
-curl "http://localhost:8080/metrics?resource=post&resourceId=550e8400-e29b-41d4-a716-446655440000&key=view_count"
+curl "http://localhost:8080/metrics?resource=post&resourceId=550e8400-e29b-41d4-a716-446655440000&name=views"
 
 # Update view count (after fetching metric ID)
 curl -X PUT http://localhost:8080/metrics/{id} \
@@ -246,12 +246,12 @@ curl -X POST http://localhost:8080/metrics \
   -d '{
     "resource": "product",
     "resourceId": "650e8400-e29b-41d4-a716-446655440000",
-    "key": "download_count",
+    "name": "download_count",
     "value": 1
   }'
 
 # Get top 10 most downloaded products
-curl "http://localhost:8080/metrics?key=download_count&order=-value&limit=10"
+curl "http://localhost:8080/metrics?name=download_count&order=-value&limit=10"
 ```
 
 ### Reputation System
@@ -263,7 +263,7 @@ curl -X POST http://localhost:8080/metrics \
   -d '{
     "resource": "user",
     "resourceId": "750e8400-e29b-41d4-a716-446655440000",
-    "key": "reputation",
+    "name": "reputation",
     "value": 100
   }'
 
@@ -355,7 +355,7 @@ git commit --no-verify
 - **Input Validation**: All requests validated before database operations
 - **Resource Type Whitelist**: Only configured resource types allowed
 - **UUID Validation**: Strict UUID format enforcement for resource IDs
-- **Key Length Limits**: Configurable maximum key length (1-255)
+- **name Length Limits**: Configurable maximum name length (1-255)
 - **Value Constraints**: Optional positive-only value enforcement
 - **Filter Limits**: Maximum 50 values per filter field to prevent abuse
 
