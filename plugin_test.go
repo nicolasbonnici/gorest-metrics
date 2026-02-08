@@ -55,8 +55,8 @@ func TestMetricsPlugin_Initialize(t *testing.T) {
 		{
 			name: "partial config",
 			config: map[string]interface{}{
-				"allowed_types":   []interface{}{"post", "product"},
-				"max_key_length":  100,
+				"allowed_types":    []interface{}{"post", "product"},
+				"max_key_length":   100,
 				"pagination_limit": 25,
 			},
 			wantErr: false,
