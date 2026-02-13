@@ -75,7 +75,7 @@ func (r *MetricResource) List(c *fiber.Ctx) error {
 		"id":         "id",
 		"resource":   "resource",
 		"resourceId": "resource_id",
-		"key":        "key",
+		"name":       "name",
 		"value":      "value",
 		"createdAt":  "created_at",
 	}
