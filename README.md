@@ -23,6 +23,20 @@ A production-ready GoREST plugin for tracking integer metrics on polymorphic res
 go get github.com/nicolasbonnici/gorest-metrics
 ```
 
+
+## Development Environment
+
+To set up your development environment:
+
+```bash
+make install
+```
+
+This will:
+- Install Go dependencies
+- Install development tools (golangci-lint)
+- Set up git hooks (pre-commit linting and tests)
+
 ## Quick Start
 
 ```go
