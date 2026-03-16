@@ -92,9 +92,9 @@ func (p *MetricsPlugin) GetOpenAPIResources() []plugin.OpenAPIResource {
 		PluralName:    "metrics",
 		BasePath:      "/metrics",
 		Tags:          []string{"Metrics"},
-		ResponseModel: Metric{},
-		CreateModel:   CreateMetricRequest{},
-		UpdateModel:   UpdateMetricRequest{},
+		ResponseModel: MetricResponseDTO{},
+		CreateModel:   MetricCreateDTO{},
+		UpdateModel:   MetricUpdateDTO{},
 		Description:   "Integer metrics tracking for polymorphic resources",
 	}}
 }
