@@ -14,24 +14,25 @@ func TestMetric_TableName(t *testing.T) {
 	}
 }
 
-func TestCreateMetricRequest_Validate(t *testing.T) {
+func TestCreateMetricDTO_Validate(t *testing.T) {
 	config := &Config{
 		AllowedTypes:       []string{"post", "user"},
 		MaxKeyLength:       255,
 		OnlyPositiveValues: false,
 	}
 
+	hooks := NewMetricHooks(config)
 	validUUID := uuid.New().String()
 
 	tests := []struct {
 		name    string
-		req     *CreateMetricRequest
+		dto     MetricCreateDTO
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "valid request",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "view_count",
@@ -41,7 +42,7 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 		},
 		{
 			name: "valid request with negative value",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "delta",
@@ -51,7 +52,7 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 		},
 		{
 			name: "invalid UUID",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: "not-a-uuid",
 				Key:        "view_count",
@@ -62,7 +63,7 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 		},
 		{
 			name: "resource not in allowed list",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "comment",
 				ResourceId: validUUID,
 				Key:        "view_count",
@@ -73,7 +74,7 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 		},
 		{
 			name: "empty key",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "   ",
@@ -84,7 +85,7 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 		},
 		{
 			name: "key exceeds max length",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        strings.Repeat("a", 256),
@@ -97,42 +98,44 @@ func TestCreateMetricRequest_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.req.Validate(config)
+			model := &Metric{}
+			err := hooks.CreateHook(nil, tt.dto, model)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Validate() expected error but got nil")
+					t.Errorf("CreateHook() expected error but got nil")
 					return
 				}
-				if tt.errMsg != "" && err.Error() != tt.errMsg {
-					t.Errorf("Validate() error = %v, want %v", err.Error(), tt.errMsg)
+				if tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("CreateHook() error = %v, want %v", err.Error(), tt.errMsg)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("Validate() unexpected error = %v", err)
+					t.Errorf("CreateHook() unexpected error = %v", err)
 				}
 			}
 		})
 	}
 }
 
-func TestCreateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
+func TestCreateMetricDTO_Validate_OnlyPositiveValues(t *testing.T) {
 	config := &Config{
 		AllowedTypes:       []string{"post"},
 		MaxKeyLength:       255,
 		OnlyPositiveValues: true,
 	}
 
+	hooks := NewMetricHooks(config)
 	validUUID := uuid.New().String()
 
 	tests := []struct {
 		name    string
-		req     *CreateMetricRequest
+		dto     MetricCreateDTO
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "positive value allowed",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "view_count",
@@ -142,7 +145,7 @@ func TestCreateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
 		},
 		{
 			name: "zero value allowed",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "view_count",
@@ -152,7 +155,7 @@ func TestCreateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
 		},
 		{
 			name: "negative value rejected",
-			req: &CreateMetricRequest{
+			dto: MetricCreateDTO{
 				Resource:   "post",
 				ResourceId: validUUID,
 				Key:        "view_count",
@@ -165,54 +168,57 @@ func TestCreateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.req.Validate(config)
+			model := &Metric{}
+			err := hooks.CreateHook(nil, tt.dto, model)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Validate() expected error but got nil")
+					t.Errorf("CreateHook() expected error but got nil")
 					return
 				}
-				if tt.errMsg != "" && err.Error() != tt.errMsg {
-					t.Errorf("Validate() error = %v, want %v", err.Error(), tt.errMsg)
+				if tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("CreateHook() error = %v, want %v", err.Error(), tt.errMsg)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("Validate() unexpected error = %v", err)
+					t.Errorf("CreateHook() unexpected error = %v", err)
 				}
 			}
 		})
 	}
 }
 
-func TestUpdateMetricRequest_Validate(t *testing.T) {
+func TestUpdateMetricDTO_Validate(t *testing.T) {
 	config := &Config{
 		AllowedTypes:       []string{"post"},
 		MaxKeyLength:       255,
 		OnlyPositiveValues: false,
 	}
 
+	hooks := NewMetricHooks(config)
+
 	tests := []struct {
 		name    string
-		req     *UpdateMetricRequest
+		dto     MetricUpdateDTO
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "valid positive value",
-			req: &UpdateMetricRequest{
+			dto: MetricUpdateDTO{
 				Value: 200,
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid negative value",
-			req: &UpdateMetricRequest{
+			dto: MetricUpdateDTO{
 				Value: -100,
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid zero value",
-			req: &UpdateMetricRequest{
+			dto: MetricUpdateDTO{
 				Value: 0,
 			},
 			wantErr: false,
@@ -221,47 +227,50 @@ func TestUpdateMetricRequest_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.req.Validate(config)
+			model := &Metric{}
+			err := hooks.UpdateHook(nil, tt.dto, model)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Validate() expected error but got nil")
+					t.Errorf("UpdateHook() expected error but got nil")
 					return
 				}
-				if tt.errMsg != "" && err.Error() != tt.errMsg {
-					t.Errorf("Validate() error = %v, want %v", err.Error(), tt.errMsg)
+				if tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("UpdateHook() error = %v, want %v", err.Error(), tt.errMsg)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("Validate() unexpected error = %v", err)
+					t.Errorf("UpdateHook() unexpected error = %v", err)
 				}
 			}
 		})
 	}
 }
 
-func TestUpdateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
+func TestUpdateMetricDTO_Validate_OnlyPositiveValues(t *testing.T) {
 	config := &Config{
 		AllowedTypes:       []string{"post"},
 		MaxKeyLength:       255,
 		OnlyPositiveValues: true,
 	}
 
+	hooks := NewMetricHooks(config)
+
 	tests := []struct {
 		name    string
-		req     *UpdateMetricRequest
+		dto     MetricUpdateDTO
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "positive value allowed",
-			req: &UpdateMetricRequest{
+			dto: MetricUpdateDTO{
 				Value: 100,
 			},
 			wantErr: false,
 		},
 		{
 			name: "negative value rejected",
-			req: &UpdateMetricRequest{
+			dto: MetricUpdateDTO{
 				Value: -1,
 			},
 			wantErr: true,
@@ -271,18 +280,19 @@ func TestUpdateMetricRequest_Validate_OnlyPositiveValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.req.Validate(config)
+			model := &Metric{}
+			err := hooks.UpdateHook(nil, tt.dto, model)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Validate() expected error but got nil")
+					t.Errorf("UpdateHook() expected error but got nil")
 					return
 				}
-				if tt.errMsg != "" && err.Error() != tt.errMsg {
-					t.Errorf("Validate() error = %v, want %v", err.Error(), tt.errMsg)
+				if tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("UpdateHook() error = %v, want %v", err.Error(), tt.errMsg)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("Validate() unexpected error = %v", err)
+					t.Errorf("UpdateHook() unexpected error = %v", err)
 				}
 			}
 		})
