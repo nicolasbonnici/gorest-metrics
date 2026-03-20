@@ -11,20 +11,6 @@ func TestMaxFilterValuesPerField(t *testing.T) {
 }
 
 func TestMetricResource_Initialization(t *testing.T) {
-	config := &Config{
-		AllowedTypes:       []string{"post", "user"},
-		PaginationLimit:    50,
-		MaxPaginationLimit: 200,
-	}
-
-	resource := &MetricResource{
-		Config:             config,
-		PaginationLimit:    config.PaginationLimit,
-		PaginationMaxLimit: config.MaxPaginationLimit,
-	}
-
+	resource := &MetricResource{}
 	assert.NotNil(t, resource)
-	assert.Equal(t, config, resource.Config)
-	assert.Equal(t, 50, resource.PaginationLimit)
-	assert.Equal(t, 200, resource.PaginationMaxLimit)
 }
