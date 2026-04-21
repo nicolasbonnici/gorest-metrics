@@ -13,7 +13,7 @@ type MetricResource struct {
 	processor processor.Processor[Metric, MetricCreateDTO, MetricUpdateDTO, MetricResponseDTO]
 }
 
-func RegisterMetricRoutes(app *fiber.App, db database.Database, config *Config) {
+func RegisterMetricRoutes(router fiber.Router, db database.Database, config *Config) {
 	metricCRUD := crud.New[Metric](db)
 	hooks := NewMetricHooks(config)
 	converter := &MetricConverter{}
@@ -44,11 +44,11 @@ func RegisterMetricRoutes(app *fiber.App, db database.Database, config *Config) 
 		processor: proc,
 	}
 
-	app.Get("/metrics", res.GetAll)
-	app.Get("/metrics/:id", res.GetByID)
-	app.Post("/metrics", res.Create)
-	app.Put("/metrics/:id", res.Update)
-	app.Delete("/metrics/:id", res.Delete)
+	router.Get("/metrics", res.GetAll)
+	router.Get("/metrics/:id", res.GetByID)
+	router.Post("/metrics", res.Create)
+	router.Put("/metrics/:id", res.Update)
+	router.Delete("/metrics/:id", res.Delete)
 }
 
 func (r *MetricResource) Create(c *fiber.Ctx) error {
