@@ -69,12 +69,12 @@ func (p *MetricsPlugin) Handler() fiber.Handler {
 	}
 }
 
-func (p *MetricsPlugin) SetupEndpoints(app *fiber.App) error {
+func (p *MetricsPlugin) SetupEndpoints(router fiber.Router) error {
 	if p.db == nil {
 		return nil
 	}
 
-	RegisterRoutes(app, p.db, &p.config)
+	RegisterRoutes(router, p.db, &p.config)
 	return nil
 }
 
