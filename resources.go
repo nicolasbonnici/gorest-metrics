@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/nicolasbonnici/gorest/crud"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/processor"
@@ -51,22 +51,22 @@ func RegisterMetricRoutes(router fiber.Router, db database.Database, config *Con
 	router.Delete("/metrics/:id", res.Delete)
 }
 
-func (r *MetricResource) Create(c *fiber.Ctx) error {
+func (r *MetricResource) Create(c fiber.Ctx) error {
 	return r.processor.Create(c)
 }
 
-func (r *MetricResource) GetByID(c *fiber.Ctx) error {
+func (r *MetricResource) GetByID(c fiber.Ctx) error {
 	return r.processor.GetByID(c)
 }
 
-func (r *MetricResource) GetAll(c *fiber.Ctx) error {
+func (r *MetricResource) GetAll(c fiber.Ctx) error {
 	return r.processor.GetAll(c)
 }
 
-func (r *MetricResource) Update(c *fiber.Ctx) error {
+func (r *MetricResource) Update(c fiber.Ctx) error {
 	return r.processor.Update(c)
 }
 
-func (r *MetricResource) Delete(c *fiber.Ctx) error {
+func (r *MetricResource) Delete(c fiber.Ctx) error {
 	return r.processor.Delete(c)
 }

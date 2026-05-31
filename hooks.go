@@ -3,7 +3,7 @@ package metrics
 import (
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"github.com/nicolasbonnici/gorest/crud"
 	"github.com/nicolasbonnici/gorest/query"
@@ -19,7 +19,7 @@ func NewMetricHooks(config *Config) *MetricHooks {
 	}
 }
 
-func (h *MetricHooks) CreateHook(c *fiber.Ctx, dto MetricCreateDTO, model *Metric) error {
+func (h *MetricHooks) CreateHook(c fiber.Ctx, dto MetricCreateDTO, model *Metric) error {
 	if !h.config.IsAllowedType(dto.Resource) {
 		return fiber.NewError(400, "resource type is not allowed")
 	}
@@ -46,7 +46,7 @@ func (h *MetricHooks) CreateHook(c *fiber.Ctx, dto MetricCreateDTO, model *Metri
 	return nil
 }
 
-func (h *MetricHooks) UpdateHook(c *fiber.Ctx, dto MetricUpdateDTO, model *Metric) error {
+func (h *MetricHooks) UpdateHook(c fiber.Ctx, dto MetricUpdateDTO, model *Metric) error {
 	if h.config.OnlyPositiveValues && dto.Value < 0 {
 		return fiber.NewError(400, "value must be positive")
 	}
@@ -54,6 +54,6 @@ func (h *MetricHooks) UpdateHook(c *fiber.Ctx, dto MetricUpdateDTO, model *Metri
 	return nil
 }
 
-func (h *MetricHooks) GetAllHook(c *fiber.Ctx, conditions *[]query.Condition, orderBy *[]crud.OrderByClause) error {
+func (h *MetricHooks) GetAllHook(c fiber.Ctx, conditions *[]query.Condition, orderBy *[]crud.OrderByClause) error {
 	return nil
 }

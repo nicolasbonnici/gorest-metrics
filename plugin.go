@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/nicolasbonnici/gorest-metrics/migrations"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/plugin"
@@ -64,7 +64,7 @@ func (p *MetricsPlugin) Initialize(config map[string]interface{}) error {
 }
 
 func (p *MetricsPlugin) Handler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		return c.Next()
 	}
 }
