@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"context"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/nicolasbonnici/gorest-metrics/migrations"
 	"github.com/nicolasbonnici/gorest/database"
@@ -10,6 +12,7 @@ import (
 type MetricsPlugin struct {
 	config Config
 	db     database.Database
+	writer *batchWriter
 }
 
 func NewPlugin() plugin.Plugin {
@@ -74,8 +77,19 @@ func (p *MetricsPlugin) SetupEndpoints(router fiber.Router) error {
 		return nil
 	}
 
-	RegisterRoutes(router, p.db, &p.config)
+	p.writer = newBatchWriter(p.db, batchWriterOptions{})
+	RegisterRoutes(router, p.db, &p.config, p.writer)
 	return nil
+}
+
+// Close flushes any buffered metrics and stops the background writer. Hosts
+// must call it during graceful shutdown (after the HTTP server has drained) so
+// no accepted metric is lost.
+func (p *MetricsPlugin) Close(ctx context.Context) error {
+	if p.writer == nil {
+		return nil
+	}
+	return p.writer.shutdown(ctx)
 }
 
 func (p *MetricsPlugin) MigrationSource() interface{} {
