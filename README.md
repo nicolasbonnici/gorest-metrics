@@ -1,7 +1,8 @@
 # GoREST Metrics Plugin
 
 [![CI](https://github.com/nicolasbonnici/gorest-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/nicolasbonnici/gorest-metrics/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nicolasbonnici/gorest-metrics)](https://goreportcard.com/report/github.com/nicolasbonnici/gorest-metrics)
+[![Go Reference](https://pkg.go.dev/badge/github.com/nicolasbonnici/gorest-metrics.svg)](https://pkg.go.dev/github.com/nicolasbonnici/gorest-metrics)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/nicolasbonnici/gorest-metrics)](https://github.com/nicolasbonnici/gorest-metrics/blob/HEAD/go.mod)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A production-ready GoREST plugin for tracking integer metrics on polymorphic resources. Track view counts, downloads, likes, or any custom metric with historical data and efficient querying.
